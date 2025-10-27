@@ -15,8 +15,13 @@ import CreateNewAgentButton from "./create-new-agent";
 import { cn } from "@/lib/utils";
 import * as React from "react";
 import { useAuth } from "@/components/auth-provider";
-import { usePathname } from "next/navigation";
-import favicon from "@/public/favicon.png"
+import { usePathname, useRouter } from "next/navigation";
+import favicon from "@/public/favicon.png";
+import { Avatar } from "./ui/avatar";
+import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { GetImgUrl } from "@/lib/cyberchat";
+import { Button } from "./ui/button";
+import { Compass } from "lucide-react";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   excludePaths?: string[];
@@ -26,12 +31,19 @@ export default function AppSidebar({
   excludePaths = [],
   ...props
 }: AppSidebarProps) {
-  const { loginStatus } = useAuth();
+  const { loginStatus, userInfo } = useAuth();
   const pathname = usePathname();
-  
+  const route = useRouter();
+  const SIDEBAR_NAV_ITEMS = [
+    {
+      name: "发现新朋友",
+      icon: <Compass />,
+      href: "/home",
+    },
+  ];
   // 检查当前路径是否在排除列表中
   const isExcludedPath = React.useMemo(() => {
-    return excludePaths.some(path => pathname.startsWith(path));
+    return excludePaths.some((path) => pathname.startsWith(path));
   }, [pathname, excludePaths]);
 
   // 如果在排除列表中，则不渲染 sidebar
@@ -43,7 +55,7 @@ export default function AppSidebar({
     <Sidebar
       collapsible="offcanvas"
       {...props}
-      className={cn("px-6", props.className)}
+      className={cn("px-6!", props.className)}
     >
       <SidebarHeader>
         <SidebarMenu>
@@ -73,12 +85,56 @@ export default function AppSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* 我的对话列表 */}
+        {/* 系统导航列表 */}
+        <SidebarGroup>
+          <SidebarMenu>
+            {SIDEBAR_NAV_ITEMS.map((item, key) => (
+              <SidebarMenuItem key={key}>
+                <SidebarMenuButton
+                  asChild
+                  onClick={() => route.push(item.href)}
+                >
+                  <div className="flex items-center gap-2">
+                    {item.icon}
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex h-full w-full items-center justify-center"></div>
+            <SidebarMenuButton
+              asChild
+              onClick={() => route.push("/home/profile?title=个人中心")}
+            >
+              <div className="flex h-full w-full items-center gap-4 pb-2 select-none">
+                <Avatar className="h-8 w-8">
+                  {userInfo && userInfo.length > 0 ? (
+                    <>
+                      <AvatarImage
+                        className="h-full w-full"
+                        src={GetImgUrl(
+                          "users",
+                          "user_image-" + userInfo[0].id.toString(),
+                          new Date()
+                        )}
+                        alt={userInfo[0].user_name}
+                      />
+                      <AvatarFallback>
+                        {userInfo[0].user_name.substring(0, 2)}
+                      </AvatarFallback>
+                    </>
+                  ) : (
+                    <AvatarFallback>U</AvatarFallback>
+                  )}
+                </Avatar>
+                <h1 className="text-md">{userInfo && userInfo[0].user_name}</h1>
+              </div>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

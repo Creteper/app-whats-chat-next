@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { CheckLoginStatus } from "@/lib/cyberchat";
-
+import { CheckLoginStatus, GetUserInfo } from "@/lib/cyberchat";
+import { UserInfo } from "@/types/users";
 // 定义不需要重定向到登录页面的路径
 const EXCLUDE_AUTH_REDIRECT_PATHS = [
   "/login",
@@ -12,7 +12,7 @@ const EXCLUDE_AUTH_REDIRECT_PATHS = [
   "/not-found",
   "/error",
   "/global-error",
-  "/maintenance"
+  "/maintenance",
 ];
 
 // 定义 AuthContext 的类型
@@ -20,6 +20,8 @@ interface AuthContextType {
   loginStatus: boolean;
   setLoginStatus: React.Dispatch<React.SetStateAction<boolean>>;
   checkingStatus: boolean;
+  userInfo: UserInfo | null;
+  setUserInfo: React.Dispatch<React.SetStateAction<UserInfo | null>>;
 }
 
 // 创建 Context
@@ -28,6 +30,7 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 // Provider 组件
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loginStatus, setLoginStatus] = React.useState(false);
+  const [userInfo, setUserInfo] = React.useState<UserInfo | null>(null);
   const [checkingStatus, setCheckingStatus] = React.useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -37,6 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const status = await CheckLoginStatus();
         setLoginStatus(status);
+
+        const userInfo = await GetUserInfo();
+        setUserInfo(userInfo);
       } catch (error) {
         console.error("Failed to check login status:", error);
         setLoginStatus(false);
@@ -52,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 但要排除特定的路径（如错误页面）
   React.useEffect(() => {
     // 检查当前路径是否在排除列表中
-    const isExcludedPath = EXCLUDE_AUTH_REDIRECT_PATHS.some(path => 
+    const isExcludedPath = EXCLUDE_AUTH_REDIRECT_PATHS.some((path) =>
       pathname.startsWith(path)
     );
 
@@ -65,7 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     loginStatus,
     setLoginStatus,
-    checkingStatus
+    checkingStatus,
+    userInfo,
+    setUserInfo,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

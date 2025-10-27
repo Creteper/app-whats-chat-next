@@ -6,6 +6,7 @@ import { setCookie, getCookies } from "./cookies";
 import { type UserInfo } from "@/types/users"
 import { md5 } from "./md5";
 import localforage from "localforage";
+import { AgentItems } from "@/types/agent";
 
 export type CyberChatUser = {
   username: string;
@@ -23,6 +24,13 @@ export interface CyberChatResponse {
   code: number;
   message: string;
   data: any;
+};
+
+// 为 AI 列表响应定义专门的接口
+export interface CyberChatAIListResponse {
+  code: number;
+  message: string;
+  data: AgentItems[];
 }
 
 // 生成随机 User-Agent 的函数
@@ -155,13 +163,35 @@ export default class CyberChatAPI {
     return response.data as UserInfo;
   }
 
-  async getAIList(pm: CyberChatLoadAIListParams) {
-    const response = await this.axiosInstance.post("/load_AI_list.php", pm);
-    return response.data;
+  async getAIList(pm: CyberChatLoadAIListParams): Promise<CyberChatAIListResponse> {
+    try {
+      const response = await this.axiosInstance.post("/load_AI_list.php", pm);
+      return {
+        code: response.status,
+        message: "success",
+        data: response.data && Array.isArray(response.data) ? response.data : []
+      };
+    } catch (error) {
+      console.error("获取AI列表时出错:", error);
+      return {
+        code: 500,
+        message: "获取AI列表失败",
+        data: []
+      };
+    }
   }
 }
 
 export async function CheckLoginStatus() {
   const uid = await localforage.getItem("userNameMd5");
   return uid ? true : false;
+}
+
+export async function GetUserInfo() {
+  const uinfo = await localforage.getItem("userInfo");
+  return uinfo as UserInfo;
+}
+
+export function GetImgUrl(type: string, name: string, date: Date) {
+  return `/api/chat2/assets/images/${type}/${name}.jpg?r=${date.getTime()}`;
 }
