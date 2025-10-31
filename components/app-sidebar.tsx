@@ -21,7 +21,8 @@ import { Avatar } from "./ui/avatar";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { GetImgUrl } from "@/lib/cyberchat";
 import { Button } from "./ui/button";
-import { Compass } from "lucide-react";
+import { Compass, MessageSquare } from "lucide-react";
+import { Kbd } from "./ui/kbd";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   excludePaths?: string[];
@@ -40,6 +41,11 @@ export default function AppSidebar({
       icon: <Compass />,
       href: "/home",
     },
+    {
+      name: "消息",
+      icon: <MessageSquare />,
+      href: "/home/message?title=消息",
+    }
   ];
   // 检查当前路径是否在排除列表中
   const isExcludedPath = React.useMemo(() => {
@@ -133,6 +139,7 @@ export default function AppSidebar({
                   )}
                 </Avatar>
                 <h1 className="text-md">{userInfo && userInfo[0].user_name}</h1>
+                <Kbd>用户设置</Kbd>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

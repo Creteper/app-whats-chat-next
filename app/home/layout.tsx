@@ -21,6 +21,7 @@ export default function HomeLayout({
   ];
   return (
     <AuthProvider>
+      <canvas className="hidden"></canvas>
       <AppLayout excludePaths={EXCLUDE_SIDEBAR_PATHS}>{children}</AppLayout>
     </AuthProvider>
   );

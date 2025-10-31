@@ -10,7 +10,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import localforage from "localforage";
+import { setClientUserInfo } from "@/lib/client-storage";
 import { Input } from "@/components/ui/input";
 import CyberChatAPI from "@/lib/cyberchat";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter()
+  const router = useRouter();
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -35,13 +35,29 @@ export function LoginForm({
       }
 
       const userInfo = await cyberChatApi.getUserInfo();
-      localforage.setItem("userInfo", userInfo);
+      await setClientUserInfo(userInfo);
+      
+      // 只存储必要的用户信息到 cookies（避免 cookie 大小限制）
+      try {
+        // 只存储用户的基本信息，避免 cookie 过大
+        const basicUserInfo = {
+          uuid: userInfo[0]?.uuid,
+          user_name: userInfo[0]?.user_name,
+          // 只存储必要的字段
+        };
+        const encodedUserInfo = encodeURIComponent(JSON.stringify(basicUserInfo));
+        document.cookie = `userInfo=${encodedUserInfo}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `userNameMd5=${cyberChatApi.userNameMd5}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `passWordMd5=${cyberChatApi.passWordMd5}; path=/; max-age=86400; SameSite=Lax`;
+        console.log("成功设置 cookies");
+      } catch (cookieError) {
+        console.error("设置 cookies 失败:", cookieError);
+      }
 
-      toast.success("登录成功,欢迎回来 " + userInfo[0].user_name)
-      router.push("/home")
-
+      toast.success("登录成功,欢迎回来 " + userInfo[0].user_name);
+      router.push("/home");
     } catch (error: Error | any) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
   }
 
@@ -76,7 +92,13 @@ export function LoginForm({
           </Field>
           <Field>
             <FieldLabel htmlFor="password">密码</FieldLabel>
-            <Input id="password" name="password" type="password" placeholder="密码" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="密码"
+              required
+            />
           </Field>
           <Field>
             <Button type="submit">登录</Button>

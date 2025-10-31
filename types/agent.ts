@@ -7,7 +7,7 @@ export type AgentItems = {
   wechat_id: string,
   sl_mask: string,
   is_search: number,
-  ls_sex: string | "男" | "女",
+  sl_sex: string | "男" | "女",
   sl_intro: string,
   mask_open: string,
   type: string,
@@ -31,10 +31,10 @@ export type AgentItems = {
   changsuo: string,
   mask_half: string,
   touxiang: string,
-  p1: Date,
-  p2: Date,
-  p3: Date,
-  p4: Date,
+  p1: string,
+  p2: string,
+  p3: string,
+  p4: string,
   myself: number,
   for_sex: string | "女性向" | "男性向"
   publish_sys: number,
@@ -44,4 +44,32 @@ export type AgentItems = {
   free: string,
   voice_type: string,
   last_weibo: string
+}
+
+
+export type AiRecentItem = {
+  low_load_event: number,
+  room_load_1v1: number,
+  room_load_event: number,
+  logtime: string,
+  my_name: string,
+  not_read_cnt: number,
+  sl_id: string,
+  my_content: string,
+  permission: number,
+  chat_open: number,
+  sl_create_type:string
+}
+
+export type AiChatItem = {
+  chat_id: string,
+  new_id: string,
+  logtime: string,
+  name: string,
+  content: string,
+  role: string | 'Human' | 'AI'
+  ctype: string,
+  img_url: string,
+  quote_img_order: string,
+  img_author: string | 'Human' | 'AI'
 }

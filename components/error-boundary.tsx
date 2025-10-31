@@ -1,5 +1,16 @@
 import React from "react";
-
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Bug } from "lucide-react";
+import { Button } from "./ui/button";
+import { refresh } from "next/cache";
+import { useRouter } from "next/navigation";
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
@@ -9,7 +20,13 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -30,9 +47,20 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       // 你可以自定义降级 UI
       return (
         this.props.fallback || (
-          <div className="p-4 text-center text-red-500">
-            出现了一些错误，请稍后重试。
-          </div>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant={"icon"}>
+                <Bug className="text-destructive" />
+              </EmptyMedia>
+              <EmptyTitle>遇到一些错误</EmptyTitle>
+              <EmptyDescription>
+                choo, 哦豁，程序出错了，请稍后再试。
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button onClick={() => window.location.reload()}>重试</Button>
+            </EmptyContent>
+          </Empty>
         )
       );
     }
