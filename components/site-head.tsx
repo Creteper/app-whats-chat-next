@@ -3,14 +3,14 @@ import { Button } from "./ui/button";
 import { SidebarTrigger } from "./ui/sidebar";
 import ModeToggle from "./triggle-theme";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, Suspense } from "react";
 import { useAuth } from "./auth-provider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useElementVisibility } from "@/hooks/use-scroll-visibility";
 import { FloatingTabBar } from "./floating-tabbar";
 import { AnimatePresence } from "motion/react";
 
-export default function SiteHead() {
+function SiteHeadContent() {
   const params = useSearchParams();
   const { userInfo } = useAuth();
   const router = useRouter();
@@ -74,5 +74,19 @@ export default function SiteHead() {
         {isMobile && !isHeaderVisible && <FloatingTabBar />}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function SiteHead() {
+  return (
+    <Suspense fallback={
+      <header className="flex shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) justify-between px-6 py-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-semibold">加载中...</h1>
+        </div>
+      </header>
+    }>
+      <SiteHeadContent />
+    </Suspense>
   );
 }
